@@ -34,17 +34,21 @@ class PublicClient
 
     public function getTicker($ticker)
     {
-        return json_decode($this->getHttpClient()->get('/api/1/public/'.$ticker.'/ticker')->getBody(), true);
+        return json_decode($this->getHttpClient()->get('/api/2/public/ticker/' . $ticker)->getBody(), true);
     }
 
 
     public function getTickers()
     {
-        return json_decode($this->getHttpClient()->get('/api/1/public/ticker')->getBody(), true);
+        return json_decode($this->getHttpClient()->get('/api/2/public/ticker')->getBody(), true);
     }
-   
-    public function getOderBook($ticker)
+
+    public function getOderBook($ticker, $limit = 20)
     {
-        return json_decode($this->getHttpClient()->get('/api/1/public/'.$ticker.'/orderbook')->getBody(), true);
+        return json_decode($this->getHttpClient()->get('/api/2/public/orderbook/' . $ticker, [
+            'query' => [
+                'limit' => $limit
+            ]
+        ])->getBody(), true);
     }
 }
