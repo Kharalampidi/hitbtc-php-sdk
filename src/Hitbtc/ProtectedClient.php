@@ -254,12 +254,12 @@ class ProtectedClient
      */
     public function getBalanceTrading()
     {
-        $response = $this->getHttpClient()->get('/api/1/trading/balance', array('exceptions' => false));
+        $response = $this->getHttpClient()->get('/api/2/trading/balance', array('exceptions' => false));
         $document = json_decode($response->getBody(), true);
-        if (isset($document['balance'])) {
+        if ($document) {
             $balances = [];
-            foreach ($document['balance'] as $balanceData) {
-                $balances[] = new BalanceTrading($balanceData['currency_code'], $balanceData['cash'], $balanceData['reserved']);
+            foreach ($document as $balanceData) {
+                $balances[] = new BalanceTrading($balanceData['currency'], $balanceData['available'], $balanceData['reserved']);
             }
 
             return $balances;
