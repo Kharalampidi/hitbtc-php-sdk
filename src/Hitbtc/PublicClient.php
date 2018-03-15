@@ -51,4 +51,10 @@ class PublicClient
             ]
         ])->getBody(), true);
     }
+
+
+    public function getSymbols()
+    {
+        return json_decode($this->getHttpClient()->get('/api/2/public/symbol')->getBody(), true);
+    }
 }
