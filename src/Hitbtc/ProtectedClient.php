@@ -69,20 +69,15 @@ class ProtectedClient
      */
     public function newOrder(NewOrder $order)
     {
-        $response = $this->getHttpClient()->post('/api/1/trading/new_order', array(
-            'body' => $order->asArray(),
+        $response = $this->getHttpClient()->post('/api/2/order', array(
+            'form_params' => $order->asArray(),
             'exceptions' => false,
         ));
         $document = json_decode($response->getBody(), true);
-
-        if (isset($document['ExecutionReport'])) {
-            if ($document['ExecutionReport']['execReportType'] == 'rejected') {
-                throw new RejectException($document['ExecutionReport']['orderRejectReason'], $document['ExecutionReport']);
-            } else {
-                return new Order($document['ExecutionReport']);
-            }
+        if (isset($document['error'])) {
+            throw new \Exception($document['error']['message']);
         }
-        throw new InvalidRequestException($response->getBody());
+        return $document;
     }
 
     /**
@@ -101,7 +96,7 @@ class ProtectedClient
         }
 
         $response = $this->getHttpClient()->post('/api/1/trading/cancel_order', array(
-            'body' => array(
+            'form_params' => array(
                 'clientOrderId' => $order->getClientOrderId(),
                 'cancelRequestClientOrderId' => $cancelRequestId,
                 'symbol' => $order->getSymbol(),
@@ -256,7 +251,7 @@ class ProtectedClient
     {
         $response = $this->getHttpClient()->get('/api/2/trading/balance', array('exceptions' => false));
         $document = json_decode($response->getBody(), true);
-        if ($document) {
+        if ($response->getStatusCode() < 400) {
             $balances = [];
             foreach ($document as $balanceData) {
                 $balances[] = new BalanceTrading($balanceData['currency'], $balanceData['available'], $balanceData['reserved']);
@@ -318,7 +313,7 @@ class ProtectedClient
     {
         $url = $trading ? '/api/1/payment/transfer_to_trading' : '/api/1/payment/transfer_to_main';
         $response = $this->getHttpClient()->post($url, array(
-            'body' => array(
+            'form_params' => array(
                 'currency_code' => $currency,
                 'amount' => $amount
             ),
@@ -372,7 +367,7 @@ class ProtectedClient
     public function payout($currency, $amount, $address, $paymentId = null)
     {
         $response = $this->getHttpClient()->post('/api/1/payment/payout', array(
-            'body' => array(
+            'form_params' => array(
                 'currency_code' => $currency,
                 'amount' => $amount,
                 'address' => $address,
